@@ -84,7 +84,7 @@ with st.sidebar:
         st.session_state.player.register()
 
     st.divider()
-    st.session_state.selectbox("lang", ("zh", "en"))
+    st.session_state.selectbox("lang", ("zh", "en", "ja"))
 
 
 def display_stat(stat):
@@ -116,7 +116,14 @@ This week's orders $order plus backlogged orders $out_of_stock_this_week sum up 
 
 Therefore, you sell $sell and your inventory becomes $inventory
 
-Finally, the total cost is $cost'''
+Finally, the total cost is $cost''',
+        'ja': '''今週の入荷 $delivery と既存の在庫 $inventory_this_week を合わせて、合計 $can_sell 販売可能です。
+
+今週の注文 $order と滞留注文 $out_of_stock_this_week を合わせて、合計 $should_sell を販売する必要があります。
+
+したがって、$sell を販売し、在庫は $inventory になります。
+
+最終的な総コストは $cost です。'''
     }
     STORY = Template(STORY_I18N.get(lang) or STORY_I18N['zh'])
     return STORY.substitute(stat)
