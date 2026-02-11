@@ -87,12 +87,28 @@ with st.sidebar:
     st.session_state.selectbox("lang", ("zh", "en", "ja"))
 
 
-def display_stat(stat):
-    STAT = Template('''# $role 's Week $week
+def display_stat(stat, lang='zh'):
+    if "lang" in st.session_state:
+        lang = st.session_state.lang
+
+    STAT_I18N = {
+        'zh': '''# $role 's Week $week
 | Order | Inventoy | Out of Stock | Cost |
 |------|-------| ----- | ----- |
 |$order | $inventory | $out_of_stock | $cost |
-''')
+''',
+        'en': '''# $role 's Week $week
+| Order | Inventoy | Out of Stock | Cost |
+|------|-------| ----- | ----- |
+|$order | $inventory | $out_of_stock | $cost |
+''',
+        'ja': '''# $role 's Week $week
+| 注文 | 在庫 | 在庫切れ | コスト |
+|------|-------| ----- | ----- |
+|$order | $inventory | $out_of_stock | $cost |
+''',
+}
+    STAT = Template(STAT_I18N.get(lang) or STAT_I18N['zh'])
     return STAT.substitute(stat | {
         'role': st.session_state.player_role.capitalize()
         })
