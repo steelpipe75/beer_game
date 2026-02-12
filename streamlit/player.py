@@ -6,7 +6,10 @@ import streamlit as st
 from beer_game.mongodb_adapter import MongoDB
 from beer_game.player_repo import PlayerRepo
 
-st.set_page_config(page_title="Beer Player", page_icon="📈")
+st.set_page_config(
+    page_title="Beer Game (Player)",
+    page_icon="🍺",
+)
 
 
 # =========================
@@ -52,6 +55,7 @@ def place_order_timer(order):
 # Sidebar
 # =========================
 with st.sidebar:
+    st.title("Player")
 
     role = st.selectbox(
         "player_role",

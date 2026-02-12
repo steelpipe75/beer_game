@@ -17,7 +17,7 @@ NOTPURCHASED_ICON = ":red[:material/money_bag:]"
 # Page Config
 # =========================
 st.set_page_config(
-    page_title="Beer Game",
+    page_title="Beer Game (Game Master)",
     page_icon="🍺",
 )
 
