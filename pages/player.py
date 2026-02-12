@@ -60,9 +60,22 @@ with st.sidebar:
         disabled=("player" in st.session_state)
     )
 
-    player_key = st.text_input("player_key", key="player_key")
-    player_game = st.text_input("player_game", key="player_game")
-    player_id = st.text_input("player_id", key="player_id")
+    player_key = st.text_input(
+        "player_key",
+        type="password",
+        key="player_key",
+        disabled=("player" in st.session_state)
+    )
+    player_game = st.text_input(
+        "player_game",
+        key="player_game",
+        disabled=("player" in st.session_state)
+    )
+    player_id = st.text_input(
+        "player_id",
+        key="player_id",
+        disabled=("player" in st.session_state)
+    )
 
     enabled = (
         player_key == st.secrets["player"]["key"]
@@ -86,7 +99,12 @@ with st.sidebar:
 
     st.divider()
 
-    st.selectbox("lang", ("zh", "en", "ja"), key="lang")
+    st.selectbox(
+        "lang",
+        ("zh", "en", "ja"),
+        index=2,
+        key="lang"
+    )
 
 
 # =========================

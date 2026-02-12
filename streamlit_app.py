@@ -7,6 +7,12 @@ from beer_game.game_repo import GameRepo
 from beer_game.mongodb_adapter import MongoDB
 
 
+CHECKED_ICON = ":green[:material/check_box:]"
+UNCHECKED_ICON = ":red[:material/check_box_outline_blank:]"
+
+PURCHASED_ICON = ":green[:material/lock:]"
+NOTPURCHASED_ICON = ":red[:material/money_bag:]"
+
 # =========================
 # Page Config
 # =========================
@@ -136,14 +142,18 @@ if "game" in st.session_state:
             st.markdown(
                 PLAYER_STAT.substitute(
                     player=player,
-                    shop="✅" if roles["shop"]["enabled"] else "❎",
-                    retailer="✅" if roles["retailer"]["enabled"] else "❎",
-                    factory="✅" if roles["factory"]["enabled"] else "❎",
-                    shop_purchased="🔒" if roles["shop"]["purchased"] else "💸",
-                    retailer_purchased="🔒"
-                    if roles["retailer"]["purchased"] else "💸",
-                    factory_purchased="🔒"
-                    if roles["factory"]["purchased"] else "💸",
+                    shop=CHECKED_ICON
+                    if roles["shop"]["enabled"] else UNCHECKED_ICON,
+                    retailer=CHECKED_ICON
+                    if roles["retailer"]["enabled"] else UNCHECKED_ICON,
+                    factory=CHECKED_ICON
+                    if roles["factory"]["enabled"] else UNCHECKED_ICON,
+                    shop_purchased=PURCHASED_ICON
+                    if roles["shop"]["purchased"] else NOTPURCHASED_ICON,
+                    retailer_purchased=PURCHASED_ICON
+                    if roles["retailer"]["purchased"] else NOTPURCHASED_ICON,
+                    factory_purchased=PURCHASED_ICON
+                    if roles["factory"]["purchased"] else NOTPURCHASED_ICON,
                     total_cost=sum(
                         roles[r]["cost"] for r in roles
                     )
