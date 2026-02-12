@@ -6,9 +6,14 @@ import streamlit as st
 from beer_game.mongodb_adapter import MongoDB
 from beer_game.player_repo import PlayerRepo
 
+
+# =========================
+# Page Config
+# =========================
 st.set_page_config(
     page_title="Beer Game (Player)",
     page_icon="🍺",
+    initial_sidebar_state="expanded"
 )
 
 
@@ -174,11 +179,7 @@ Finally, the total cost is $cost""",
     return template.substitute(stat)
 
 
-# =========================
-# Main Game Area
-# =========================
-if "player" in st.session_state:
-
+def player():
     st.markdown("""
 ### Game Flow
 1. Refresh
@@ -210,3 +211,12 @@ if "player" in st.session_state:
 
     st.markdown(display_stat(stat))
     st.write(tell_story(stat))
+
+
+# =========================
+# Main Area
+# =========================
+if "player" in st.session_state:
+    player()
+else:
+    st.write("👈 サイドバーから必要事項を入力してゲームを始めてください。")

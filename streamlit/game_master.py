@@ -13,12 +13,14 @@ UNCHECKED_ICON = ":red[:material/check_box_outline_blank:]"
 PURCHASED_ICON = ":green[:material/lock:]"
 NOTPURCHASED_ICON = ":red[:material/money_bag:]"
 
+
 # =========================
 # Page Config
 # =========================
 st.set_page_config(
     page_title="Beer Game (Game Master)",
     page_icon="🍺",
+    initial_sidebar_state="expanded"
 )
 
 
@@ -76,10 +78,9 @@ with st.sidebar:
 
 
 # =========================
-# Main Dashboard
+# Display Functions
 # =========================
-if "game" in st.session_state:
-
+def game_master():
     gameRepo: GameRepo = st.session_state.game
     dashboard = gameRepo.getDashboard()
     week = dashboard["week"]
@@ -162,3 +163,12 @@ if "game" in st.session_state:
 
             # デバッグ用（不要なら削除）
             st.write(roles)
+
+
+# =========================
+# Main Area
+# =========================
+if "game" in st.session_state:
+    game_master()
+else:
+    st.write("👈 サイドバーから管理者キーとゲームIDを入力してゲームを開始してください。")
