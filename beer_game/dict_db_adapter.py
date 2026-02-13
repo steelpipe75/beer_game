@@ -4,7 +4,7 @@ from .adapter import DataAdapter
 from .models import GAME_TEMPLATE, ORDER_TEMPLATE, STAT_TEMPLATE
 
 
-class DictDB(DataAdapter):
+class DictDBAdapter(DataAdapter):
     def __init__(self):
         self.data = {"stat": {}, "order": {}}
 

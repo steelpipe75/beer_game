@@ -1,12 +1,12 @@
 import unittest
 
-from beer_game.dict_db import DictDB
+from beer_game.dict_db_adapter import DictDBAdapter
 from beer_game.game_repo import GameRepo
 from beer_game.player_repo import PlayerRepo
 
 
 class IntegrationTestCase(unittest.TestCase):
-    DB = DictDB()
+    DB = DictDBAdapter()
 
     def setUp(self):
         self.db = self.DB
