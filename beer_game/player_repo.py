@@ -1,4 +1,4 @@
-from beer_game.config import CONFIG
+from .config import CONFIG
 
 
 ROLES = ["customer", "shop", "retailer", "factory"]
