@@ -1,6 +1,6 @@
 import unittest
 
-from beer_game.adapter import DictDB
+from beer_game.dict_db import DictDB
 from beer_game.game_repo import GameRepo
 
 

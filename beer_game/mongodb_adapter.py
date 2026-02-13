@@ -1,4 +1,5 @@
-from beer_game.adapter import DataAdapter, GAME_TEMPLATE, STAT_TEMPLATE
+from .adapter import DataAdapter
+from .models import GAME_TEMPLATE, STAT_TEMPLATE
 
 import time
 from functools import wraps

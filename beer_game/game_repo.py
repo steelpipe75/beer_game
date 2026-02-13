@@ -1,4 +1,4 @@
-from beer_game.adapter import PLAYER_TEMPLATE
+from .models import PLAYER_TEMPLATE
 from beer_game.config import CONFIG
 from beer_game.player_repo import ROLES, PlayerRepo
 from typing import TypedDict
