@@ -7,7 +7,7 @@ from typing import Optional
 
 class SQLiteAdapter(DataAdapter):
     def __init__(self, db_path):
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.create_tables()
 
     def create_tables(self):

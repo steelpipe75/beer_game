@@ -5,6 +5,8 @@ from pymongo.server_api import ServerApi
 
 from beer_game.game_repo import GameRepo
 from beer_game.mongodb_adapter import MongoDBAdapter
+from beer_game.sqlite_adapter import SQLiteAdapter
+from beer_game.dict_db_adapter import DictDBAdapter
 
 
 CHECKED_ICON = ":green[:material/check_box:]"
@@ -25,14 +27,30 @@ st.set_page_config(
 
 
 # =========================
-# MongoDB Connection
+# Database Adapter Factory
 # =========================
 @st.cache_resource
-def init_connection():
-    return pymongo.MongoClient(
-        st.secrets["mongo"]["uri"],
-        server_api=ServerApi("1")
-    )
+def get_db_adapter():
+    db_type = st.secrets.get("db", {}).get("type", "dict")
+
+    if db_type == "mongodb":
+        uri = st.secrets.get("db", {}).get("mongodb", {}).get("uri")
+        if not uri:
+            # Fallback to old config for compatibility
+            uri = st.secrets.get("mongo", {}).get("uri")
+        if not uri:
+            st.error("MongoDB URI not found in secrets.toml")
+            st.stop()
+        client = pymongo.MongoClient(uri, server_api=ServerApi("1"))
+        return MongoDBAdapter(client)
+    elif db_type == "sqlite":
+        path = st.secrets.get("db", {}).get("sqlite", {}).get("path", "beer_game.db")
+        return SQLiteAdapter(path)
+    elif db_type == "dict":
+        return DictDBAdapter()
+    else:
+        st.error(f"Invalid db.type '{db_type}' in secrets.toml")
+        st.stop()
 
 
 # =========================
@@ -55,15 +73,14 @@ with st.sidebar:
     )
 
     enabled = (
-        admin_key == st.secrets["admin"]["key"]
+        admin_key == st.secrets.get("admin", {}).get("key")
     )
 
     if st.button(
         "New Game",
         disabled=(not enabled or not game_id or "game" in st.session_state)
     ):
-        client = init_connection()
-        db = MongoDBAdapter(client)
+        db = get_db_adapter()
         st.session_state.game = GameRepo(game_id, db)
         st.session_state.game.newGame()
         st.success(f"{game_id} started")
