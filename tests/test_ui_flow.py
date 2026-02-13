@@ -3,7 +3,7 @@ import unittest
 import pymongo
 
 from beer_game.game_repo import GameRepo
-from beer_game.mongodb_adapter import MongoDB
+from beer_game.mongodb_adapter import MongoDBAdapter
 from beer_game.player_repo import PlayerRepo
 
 
@@ -11,7 +11,7 @@ class IntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         self.client = pymongo.MongoClient()
-        self.adapter = MongoDB(self.client)
+        self.adapter = MongoDBAdapter(self.client)
         self.game = GameRepo("game1", self.adapter)
         self.player = PlayerRepo("game1", "player1", "shop", self.adapter)
 

@@ -1,4 +1,4 @@
-from beer_game.adapter import GAME_TEMPLATE, STAT_TEMPLATE
+from beer_game.adapter import DataAdapter, GAME_TEMPLATE, STAT_TEMPLATE
 
 import time
 from functools import wraps
@@ -23,7 +23,7 @@ def retry(retries=3, delay=1, exception_to_check=Exception):
     return decorator_retry
 
 
-class MongoDB:
+class MongoDBAdapter(DataAdapter):
     def __init__(self, client):
         self.db = client.game
         self.stat = self.db.stat
@@ -99,9 +99,6 @@ class MongoDB:
             "type": "delivery",
         }
         return (self.order.find_one(pk) or {}).get("qty", 0)
-
-    def getDashBoard(self, game):
-        return self.game.find_one({"name": game})
 
     # GameRepo
     @retry(retries=3, delay=0.1)

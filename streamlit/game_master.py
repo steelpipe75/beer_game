@@ -4,7 +4,7 @@ import pymongo
 from pymongo.server_api import ServerApi
 
 from beer_game.game_repo import GameRepo
-from beer_game.mongodb_adapter import MongoDB
+from beer_game.mongodb_adapter import MongoDBAdapter
 
 
 CHECKED_ICON = ":green[:material/check_box:]"
@@ -63,7 +63,7 @@ with st.sidebar:
         disabled=(not enabled or not game_id or "game" in st.session_state)
     ):
         client = init_connection()
-        db = MongoDB(client)
+        db = MongoDBAdapter(client)
         st.session_state.game = GameRepo(game_id, db)
         st.session_state.game.newGame()
         st.success(f"{game_id} started")

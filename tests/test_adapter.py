@@ -1,13 +1,13 @@
 import unittest
 import pymongo
 
-from beer_game.mongodb_adapter import MongoDB
+from beer_game.mongodb_adapter import MongoDBAdapter
 
 
 class AdapterTestCase(unittest.TestCase):
     def setUp(self):
         self.client = pymongo.MongoClient()
-        self.adapter = MongoDB(self.client)
+        self.adapter = MongoDBAdapter(self.client)
 
     def tearDown(self):
         self.client.drop_database("stat")
@@ -16,13 +16,13 @@ class AdapterTestCase(unittest.TestCase):
 
     def test_create_game(self):
         self.adapter.createGame("game1")
-        game = self.adapter.getDashBoard("game1")
+        game = self.adapter.getDashboard("game1")
         self.assertEqual(game["name"], "game1")
 
         players = self.adapter.getPlayers("game1")
         self.assertEqual(len(players), 0)
 
-        dashboard = self.adapter.getDashBoard("game1")
+        dashboard = self.adapter.getDashboard("game1")
         self.assertEqual(dashboard["week"], 0)
 
     def test_add_player(self):
@@ -44,7 +44,7 @@ class AdapterTestCase(unittest.TestCase):
         self.adapter.createGame("game1")
         self.adapter.incrWeek("game1")
 
-        game = self.adapter.getDashBoard("game1")
+        game = self.adapter.getDashboard("game1")
         self.assertEqual(game["week"], 1)
 
     def test_stat_normal(self):

@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Optional
 from beer_game.config import CONFIG
 
@@ -15,7 +16,7 @@ def STAT_TEMPLATE():
         "inventory": CONFIG.init_inventory,
         "cost": 0,
         "out_of_stock": 0,
-    }  # 預先派發4個庫存
+    }
 
 
 def PLAYER_TEMPLATE():
@@ -25,8 +26,63 @@ def PLAYER_TEMPLATE():
         "factory": False,
     }
 
+class DataAdapter(ABC):
+    @abstractmethod
+    def saveStat(self, identifier, week, inventory, cost, out_of_stock):
+        pass
 
-class DictDB:
+    @abstractmethod
+    def saveOrder(self, order, week, game, player, role):
+        pass
+
+    @abstractmethod
+    def saveDelivery(self, delivery, week, game, player, role):
+        pass
+
+    @abstractmethod
+    def getStat(self, identifier: tuple, week: int) -> dict:
+        pass
+
+    @abstractmethod
+    def getOrder(self, identifier: tuple, week: int) -> int:
+        pass
+
+    @abstractmethod
+    def getDashboard(self, game: str) -> dict:
+        pass
+
+    @abstractmethod
+    def getDelivery(self, identifier: tuple, week: int) -> int:
+        pass
+
+    @abstractmethod
+    def createGame(self, game: str):
+        pass
+
+    @abstractmethod
+    def removeGame(self, game: str):
+        pass
+
+    @abstractmethod
+    def addPlayer(self, game: str, player: str, role: str):
+        pass
+
+    @abstractmethod
+    def getPlayers(self, game: str) -> dict:
+        pass
+
+    @abstractmethod
+    def incrWeek(self, game: str):
+        pass
+
+    @abstractmethod
+    def getOrderByWeek(
+        self, game: str, start_week: int, end_week: Optional[int] = None
+    ) -> dict[int, dict[str, dict[str, dict[str, int]]]]:
+        pass
+
+
+class DictDB(DataAdapter):
     def __init__(self):
         self.data = {"stat": {}, "order": {}}
 
@@ -50,15 +106,6 @@ class DictDB:
     def getStat(self, identifier: tuple, week: int) -> dict:
         pk = (identifier, week)
         return self.data["stat"].get(pk, STAT_TEMPLATE())
-
-    def getInventory(self, identifier: tuple, week: int) -> int:
-        return self.getStat(identifier, week)["inventory"]
-
-    def getCost(self, identifier: tuple, week: int) -> int:
-        return self.getStat(identifier, week)["cost"]
-
-    def getOutOfStock(self, identifier: tuple, week: int) -> int:
-        return self.getStat(identifier, week)["out_of_stock"]
 
     def getOrder(self, identifier: tuple, week: int) -> int:
         pk = (identifier, week)
@@ -98,19 +145,6 @@ class DictDB:
         gameInfo = self.data.setdefault(game, GAME_TEMPLATE())
         gameInfo["week"] += 1
 
-    """
-    Returns format
-    {
-        week: {
-            player_id: {
-                role: {
-                    order_type: order_quantity
-                }
-            }
-        }
-    }
-    """
-
     def getOrderByWeek(
         self, game: str, start_week: int, end_week: Optional[int] = None
     ) -> dict[int, dict[str, dict[str, dict[str, int]]]]:
@@ -122,7 +156,9 @@ class DictDB:
             ret[week] = {}
             for p, roles in players.items():
                 ret[week][p] = {}
-                for role in roles:
+                for role, v in roles.items():
+                    if not v:
+                        continue
                     pk = ((game, p, role), week)
                     ret[week][p][role] = self.data["order"].get(pk, {})
 

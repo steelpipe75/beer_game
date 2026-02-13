@@ -3,7 +3,7 @@ import pymongo
 from pymongo.server_api import ServerApi
 import streamlit as st
 
-from beer_game.mongodb_adapter import MongoDB
+from beer_game.mongodb_adapter import MongoDBAdapter
 from beer_game.player_repo import PlayerRepo
 
 
@@ -95,7 +95,7 @@ with st.sidebar:
         disabled=(not enabled or not player_game or not player_id or not role)
     ):
         client = init_connection()
-        db = MongoDB(client)
+        db = MongoDBAdapter(client)
 
         st.session_state.player = PlayerRepo(
             player_game,
