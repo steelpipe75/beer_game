@@ -236,4 +236,11 @@ def player():
 if "player" in st.session_state:
     player()
 else:
-    st.write("👈 サイドバーから必要事項を入力してゲームを始めてください。")
+    lang = st.session_state.get("lang", "zh")
+    ANNOUNCE_I18N = {
+        "zh": "👈 Enter the required information in the sidebar and start playing.",
+        "en": "👈 Enter the required information in the sidebar and start playing.",
+        "ja": "👈 サイドバーから必要事項を入力してゲームを始めてください。"
+    }
+    announce = ANNOUNCE_I18N.get(lang, ANNOUNCE_I18N["zh"])
+    st.write(announce)

@@ -93,6 +93,13 @@ with st.sidebar:
         del st.session_state["game"]
         st.success("Game ended")
 
+    st.selectbox(
+        "lang",
+        ("zh", "en", "ja"),
+        index=2,
+        key="lang"
+    )
+
 
 # =========================
 # Display Functions
@@ -188,4 +195,11 @@ def game_master():
 if "game" in st.session_state:
     game_master()
 else:
-    st.write("👈 サイドバーから管理者キーとゲームIDを入力してゲームを開始してください。")
+    lang = st.session_state.get("lang", "zh")
+    ANNOUNCE_I18N = {
+        "zh": "👈 Enter the required information in the sidebar and start playing.",
+        "en": "👈 Enter the required information in the sidebar and start playing.",
+        "ja": "👈 サイドバーから必要事項を入力してゲームを始めてください。"
+    }
+    announce = ANNOUNCE_I18N.get(lang, ANNOUNCE_I18N["zh"])
+    st.write(announce)
