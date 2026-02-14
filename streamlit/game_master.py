@@ -93,6 +93,8 @@ with st.sidebar:
         del st.session_state["game"]
         st.success("Game ended")
 
+    st.divider()
+
     st.selectbox(
         "lang",
         ("zh", "en", "ja"),
@@ -125,23 +127,58 @@ def game_master():
 """)
 
     # -------- Controls --------
-    left, mid1, mid2, right = st.columns(4)
+    left, _, mid1, mid2, _, right = st.columns([3,1,3,3,1,3])
 
-    left.button("Refresh")
-
-    order = mid1.number_input(
-        "Order",
-        step=1,
-        value=None,
-        placeholder="Order",
-        label_visibility="collapsed"
+    left_c = left.container(
+        height=80,
+        border=False,
+        vertical_alignment="bottom",
     )
 
-    if mid2.button("Place Order", disabled=(order is None)):
+    left_c.button(
+        "Refresh",
+        width="stretch"
+    )
+
+    mid1_c = mid1.container(
+        height=80,
+        border=False,
+        vertical_alignment="bottom",
+    )
+
+    order = mid1_c.number_input(
+        "Order",
+        step=1,
+        value=0,
+        placeholder="Order",
+        label_visibility="visible",
+        width="stretch"
+    )
+
+    mid2_c = mid2.container(
+        height=80,
+        border=False,
+        vertical_alignment="bottom",
+    )
+
+    if mid2_c.button(
+        "Place Order",
+        disabled=(order is None),
+        width="stretch"
+    ):
         gameRepo.dispatch(order)
         st.success(f"Order {order} dispatched")
 
-    if right.button("Next Week"):
+    right_c = right.container(
+        height=80,
+        border=False,
+        vertical_alignment="bottom",
+    )
+
+    if right_c.button(
+        "Next Week",
+        width="stretch"
+    ):
         gameRepo.nextWeek()
         st.success("Moved to next week")
 
