@@ -51,6 +51,7 @@ def get_db_adapter():
 # =========================
 @st.fragment(run_every="1s")
 def place_order_timer(order):
+    order_place = False
 
     if "timer" not in st.session_state:
         st.session_state.timer = 0
@@ -63,15 +64,22 @@ def place_order_timer(order):
         st.session_state.timer -= 1
         st.session_state.locked = False
     elif st.session_state.timer == 0:
+        if not st.session_state.locked:
+            order_place = True
         st.session_state.locked = True
 
     if st.button(
         "Place Order",
-        disabled=(order is None or st.session_state.locked)
+        disabled=(order is None or st.session_state.locked),
+        width="stretch"
     ):
-        st.session_state.player.purchase(order)
-        st.success(f"{order} order placed")
+        order_place = True
         st.session_state.timer = 0
+        st.session_state.locked = True
+
+    if order_place:
+        st.session_state.player.purchase(order)
+        st.rerun()
 
 
 # =========================
@@ -208,7 +216,18 @@ def player():
 
     stat = st.session_state.player.reloadStat()
 
-    if st.button("Refresh"):
+    left, _, mid, right = st.columns([3,1,6,6])
+
+    left_c = left.container(
+        height=80,
+        border=False,
+        vertical_alignment="bottom",
+    )
+
+    if left_c.button(
+        "Refresh",
+        width="stretch"
+    ):
         if (
             "curr_week" not in st.session_state
             or st.session_state.curr_week != stat["week"]
@@ -216,15 +235,33 @@ def player():
             st.session_state.timer = 30
             st.session_state.curr_week = stat["week"]
 
-    order = st.number_input(
-        "Order",
-        step=1,
-        value=None,
-        placeholder="Order",
-        label_visibility="collapsed"
+    mid_c = mid.container(
+        height=80,
+        border=False,
+        vertical_alignment="bottom",
     )
 
-    place_order_timer(order)
+    order = mid_c.number_input(
+        "Order",
+        step=1,
+        value=0,
+        placeholder="Order",
+        label_visibility="visible",
+        width="stretch"
+    )
+
+    right_c = right.container(
+        height=80,
+        border=False,
+        vertical_alignment="bottom",
+    )
+
+    with right_c:
+        place_order_timer(order)
+
+    with st.container(height=80, border=False):
+        if st.session_state.locked:
+            st.success(f"{order} order placed")
 
     st.markdown(display_stat(stat))
     st.write(tell_story(stat))
