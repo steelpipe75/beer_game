@@ -61,9 +61,9 @@ make test
 
 The whole game is divided into a host mode and a participant mode, which correspond to the options in the top corner of the UI.
 
-The host first assigns a `game_id` to create the game, and all participants have to fill in the `player_game` with this id.
+The host first assigns a `game_id` to create the game, and all participants have to fill in the `game_id` with this id.
 
-All players on the same supply chain need to use the same `player_id`, so this id is also known as the supply chain ID, and participants with the same `player_id` are separated into roles by `player_role`.
+All players on the same supply chain need to use the same `supply_chain_id`, so this id is also known as the supply chain ID, and participants with the same `supply_chain_id` are separated into roles by `player_role`.
 
 You can see the status on the host's screen when a participant joins.
 ![image](docs/join_stat.png)

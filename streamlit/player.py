@@ -93,14 +93,14 @@ with st.sidebar:
         key="player_key",
         disabled=("player" in st.session_state)
     )
-    player_game = st.text_input(
-        "player_game",
-        key="player_game",
+    game_id = st.text_input(
+        "game_id",
+        key="game_id",
         disabled=("player" in st.session_state)
     )
-    player_id = st.text_input(
-        "player_id",
-        key="player_id",
+    supply_chain_id = st.text_input(
+        "supply_chain_id",
+        key="supply_chain_id",
         disabled=("player" in st.session_state)
     )
 
@@ -110,18 +110,18 @@ with st.sidebar:
 
     if st.button(
         "Join Game",
-        disabled=(not enabled or not player_game or not player_id or not role)
+        disabled=(not enabled or not game_id or not supply_chain_id or not role)
     ):
         db = get_db_adapter()
 
         st.session_state.player = PlayerRepo(
-            player_game,
-            player_id,
+            game_id,
+            supply_chain_id,
             role,
             db
         )
         st.session_state.player.register()
-        st.success(f"{player_game} joined")
+        st.success(f"{game_id} joined")
 
     st.divider()
 
