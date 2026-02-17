@@ -186,9 +186,31 @@ def game_master():
     players = gameRepo.reloadPlayerStat()
     n_players = len(players)
 
-    st.text(f"{n_players} players")
+    n_pending_players = 0
+    for player, roles in players.items():
+        is_pending = False
+        for role_name in ["shop", "retailer", "factory"]:
+            role = roles[role_name]
+            if role["enabled"] and not role["purchased"]:
+                is_pending = True
+                break
+        if is_pending:
+            n_pending_players += 1
+    st.text(f"{n_players} players / {n_pending_players} players pending order input")
 
-    tabs = st.tabs(list(players.keys()) or ["No Player"])
+    tab_names = []
+    for player, roles in players.items():
+        pending_roles_count = 0
+        for role_name in ["shop", "retailer", "factory"]:
+            role = roles[role_name]
+            if role["enabled"] and not role["purchased"]:
+                pending_roles_count += 1
+        if pending_roles_count > 0:
+            tab_names.append(f"{player} ({pending_roles_count} pending)")
+        else:
+            tab_names.append(player)
+
+    tabs = st.tabs(tab_names or ["No Player"])
 
     for idx, (player, roles) in enumerate(players.items()):
         with tabs[idx]:
