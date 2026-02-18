@@ -282,9 +282,14 @@ def player():
         order_history = st.session_state.player.db.getOrderByWeek(game_id, start_week, current_week)
         
         table_data = []
-        header = "| 週 | 注文 | 在庫 | 在庫切れ | 発注 | コスト |"
-        table_data.append(header)
-        table_data.append("|---|---|---|---|---|---|")
+        lang = st.session_state.get("lang", "zh")
+        
+        headers = {
+            "zh": ["Week", "Incoming Order", "Inventory", "Out of Stock", "Placed Order", "Cost"],
+            "en": ["Week", "Incoming Order", "Inventory", "Out of Stock", "Placed Order", "Cost"],
+            "ja": ["週", "注文", "在庫", "在庫切れ", "発注", "コスト"]
+        }
+        current_headers = headers.get(lang, headers["zh"])
 
         for h in reversed(history):
             week = h['week']
@@ -297,10 +302,16 @@ def player():
                 next_role = ROLES[my_index + 1]
                 my_placed_order = order_history.get(week, {}).get(player_id, {}).get(next_role, {}).get('buy', 0)
             
-            row = f"| {week} | {incoming_order} | {h['inventory']} | {h['out_of_stock']} | {my_placed_order} | {h['cost']} |"
-            table_data.append(row)
+            table_data.append({
+                current_headers[0]: week,
+                current_headers[1]: incoming_order,
+                current_headers[2]: h['inventory'],
+                current_headers[3]: h['out_of_stock'],
+                current_headers[4]: my_placed_order,
+                current_headers[5]: h['cost']
+            })
         
-        st.markdown("\n".join(table_data))
+        st.table(table_data)
 
 
 # =========================
