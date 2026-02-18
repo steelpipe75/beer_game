@@ -2,6 +2,7 @@ import streamlit as st
 from string import Template
 import pymongo
 from pymongo.server_api import ServerApi
+import pandas as pd
 
 from beer_game.game_repo import GameRepo
 from beer_game.mongodb_adapter import MongoDBAdapter
@@ -245,7 +246,63 @@ def game_master():
             )
 
             # デバッグ用（不要なら削除）
-            st.write(roles)
+            # st.write(roles)
+
+            st.divider()
+            st.subheader(f"History - {player}")
+            
+            from beer_game.player_repo import PlayerRepo, ROLES
+            
+            h_role = st.selectbox(
+                "Role",
+                ("shop", "retailer", "factory"),
+                key=f"h_role_{player}",
+                label_visibility="collapsed"
+            )
+
+            p_repo = PlayerRepo(gameRepo.game, player, h_role, gameRepo.db)
+            history = p_repo.get_stat_history()
+            
+            if history:
+                start_week = history[0]['week']
+                current_week = week
+                
+                order_history = gameRepo.db.getOrderByWeek(gameRepo.game, start_week, current_week)
+                
+                table_data = []
+                lang = st.session_state.get("lang", "zh")
+                
+                headers = {
+                    "zh": ["週", "注文", "在庫", "在庫切れ", "発注", "コスト"],
+                    "en": ["Week", "Incoming Order", "Inventory", "Out of Stock", "Placed Order", "Cost"],
+                    "ja": ["週", "注文", "在庫", "在庫切れ", "発注", "コスト"]
+                }
+                current_headers = headers.get(lang, headers["zh"])
+
+                for h in reversed(history):
+                    w = h['week']
+                    
+                    incoming_order = order_history.get(w, {}).get(player, {}).get(h_role, {}).get('buy', 0)
+
+                    my_placed_order = 0
+                    if h_role != "factory": # factory does not place order to next role
+                        my_index = ROLES.index(h_role)
+                        next_role = ROLES[my_index + 1]
+                        my_placed_order = order_history.get(w, {}).get(player, {}).get(next_role, {}).get('buy', 0)
+                    
+                    table_data.append({
+                        current_headers[0]: w,
+                        current_headers[1]: incoming_order,
+                        current_headers[2]: h['inventory'],
+                        current_headers[3]: h['out_of_stock'],
+                        current_headers[4]: my_placed_order,
+                        current_headers[5]: h['cost']
+                    })
+                
+                df = pd.DataFrame(table_data)
+                st.dataframe(df, use_container_width=True, hide_index=True)
+            else:
+                st.info("No history data available for this role.")
 
 
 # =========================
