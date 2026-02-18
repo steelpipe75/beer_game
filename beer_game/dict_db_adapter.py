@@ -67,6 +67,13 @@ class DictDBAdapter(DataAdapter):
         gameInfo = self.data.setdefault(game, GAME_TEMPLATE())
         gameInfo["week"] += 1
 
+    def find_all_stats(self, game: str, player: str, role: str) -> list[dict]:
+        result = []
+        for (identifier, week), stat in self.data["stat"].items():
+            if identifier == (game, player, role):
+                result.append({**stat, "week": week})
+        return result
+
     def getOrderByWeek(
         self, game: str, start_week: int, end_week: Optional[int] = None
     ) -> dict[int, dict[str, dict[str, dict[str, int]]]]:

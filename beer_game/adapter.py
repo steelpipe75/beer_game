@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List
 
 
 class DataAdapter(ABC):
+    @abstractmethod
+    def find_all_stats(self, game: str, player: str, role: str) -> List[dict]:
+        pass
+
     @abstractmethod
     def saveStat(self, identifier, week, inventory, cost, out_of_stock):
         pass

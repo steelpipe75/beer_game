@@ -109,3 +109,13 @@ class PlayerRepo:
         else:
             next_role = ROLES[ROLES.index(self.role) + 1]
             self.db.saveOrder(order, week, self.game, self.player, next_role)
+
+    def get_stat_history(self):
+        return sorted(
+            self.db.find_all_stats(
+                self.game,
+                self.player,
+                self.role
+            ),
+            key=lambda x: x["week"]
+        )

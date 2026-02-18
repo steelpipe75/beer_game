@@ -101,6 +101,9 @@ class MongoDBAdapter(DataAdapter):
         }
         return (self.order.find_one(pk) or {}).get("qty", 0)
 
+    def find_all_stats(self, game: str, player: str, role: str) -> list[dict]:
+        return list(self.stat.find({"game": game, "player": player, "role": role}))
+
     # GameRepo
     @retry(retries=3, delay=0.1)
     def createGame(self, game):

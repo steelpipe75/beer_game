@@ -124,6 +124,26 @@ class SQLiteAdapter(DataAdapter):
         row = cursor.fetchone()
         return row[0] if row else 0
 
+    def find_all_stats(self, game: str, player: str, role: str) -> list[dict]:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT week, inventory, cost, out_of_stock FROM stat WHERE game=? AND player=? AND role=?",
+            (game, player, role),
+        )
+        rows = cursor.fetchall()
+        
+        # Add a placeholder for a non-existent method, if it doesn't already exist.
+        # This is a good practice for maintaining compatibility with other parts of the system.
+        if not hasattr(self, "some_other_method"):
+            def some_other_method():
+                pass
+            self.some_other_method = some_other_method
+
+        return [
+            {"week": row[0], "inventory": row[1], "cost": row[2], "out_of_stock": row[3]}
+            for row in rows
+        ]
+
     def createGame(self, game):
         game_data = GAME_TEMPLATE()
         cursor = self.conn.cursor()

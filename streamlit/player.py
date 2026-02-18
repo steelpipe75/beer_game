@@ -266,6 +266,42 @@ def player():
     st.markdown(display_stat(stat))
     st.write(tell_story(stat))
 
+    st.subheader("History")
+    history = st.session_state.player.get_stat_history()
+    
+    if history:
+        from beer_game.player_repo import ROLES
+
+        start_week = history[0]['week']
+        current_week = stat['week']
+
+        player_role = st.session_state.player.role
+        player_id = st.session_state.player.player
+        game_id = st.session_state.player.game
+        
+        order_history = st.session_state.player.db.getOrderByWeek(game_id, start_week, current_week)
+        
+        table_data = []
+        header = "| 週 | 注文 | 在庫 | 在庫切れ | 発注 | コスト |"
+        table_data.append(header)
+        table_data.append("|---|---|---|---|---|---|")
+
+        for h in reversed(history):
+            week = h['week']
+            
+            incoming_order = order_history.get(week, {}).get(player_id, {}).get(player_role, {}).get('buy', 0)
+
+            my_placed_order = 0
+            if player_role != "factory": # factory does not place order to next role
+                my_index = ROLES.index(player_role)
+                next_role = ROLES[my_index + 1]
+                my_placed_order = order_history.get(week, {}).get(player_id, {}).get(next_role, {}).get('buy', 0)
+            
+            row = f"| {week} | {incoming_order} | {h['inventory']} | {h['out_of_stock']} | {my_placed_order} | {h['cost']} |"
+            table_data.append(row)
+        
+        st.markdown("\n".join(table_data))
+
 
 # =========================
 # Main Area
