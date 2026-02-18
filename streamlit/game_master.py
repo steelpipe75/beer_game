@@ -23,7 +23,8 @@ NOTPURCHASED_ICON = ":red[:material/money_bag:]"
 st.set_page_config(
     page_title="Beer Game (Game Master)",
     page_icon="🍺",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    layout="wide"
 )
 
 
@@ -282,9 +283,15 @@ def game_master():
                     "en": ["Order", "Inv", "OoS", "Buy", "Cost"],
                     "ja": ["注文", "在庫", "欠品", "発注", "コスト"]
                 }
+                total_cost_label_map = {
+                    "zh": "総成本",
+                    "en": "Total Cost",
+                    "ja": "合計コスト"
+                }
                 
                 curr_role_map = role_names_map.get(lang, role_names_map["en"])
                 curr_metrics = metric_names_map.get(lang, metric_names_map["en"])
+                total_cost_label = total_cost_label_map.get(lang, total_cost_label_map["en"])
                 target_roles = ["shop", "retailer", "factory"]
 
                 # MultiIndex の列定義を作成
@@ -294,6 +301,9 @@ def game_master():
                     for m in curr_metrics:
                         col_tuples.append((r_name, m))
                 
+                # 合計コスト用の列を追加（トップレベルは空文字列または適切なラベル）
+                col_tuples.append((total_cost_label, ""))
+                
                 cols = pd.MultiIndex.from_tuples(col_tuples)
                 weeks = sorted(range(start_week, current_week + 1), reverse=True)
                 
@@ -302,6 +312,7 @@ def game_master():
                 df.index.name = "Week" if lang == "en" else "週"
                 
                 for w in weeks:
+                    weekly_total_cost = 0
                     for h_role, h_list in all_history_data:
                         if h_role not in curr_role_map: continue
                         
@@ -324,6 +335,11 @@ def game_master():
                         df.loc[w, (r_name, curr_metrics[2])] = h['out_of_stock']
                         df.loc[w, (r_name, curr_metrics[3])] = my_placed_order
                         df.loc[w, (r_name, curr_metrics[4])] = h['cost']
+                        
+                        weekly_total_cost += h['cost']
+                    
+                    # 週ごとの合計コストをセット
+                    df.loc[w, (total_cost_label, "")] = weekly_total_cost
                 
                 st.dataframe(df, use_container_width=True)
             else:
