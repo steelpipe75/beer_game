@@ -2,6 +2,7 @@ from string import Template
 import pymongo
 from pymongo.server_api import ServerApi
 import streamlit as st
+import pandas as pd
 
 from beer_game.mongodb_adapter import MongoDBAdapter
 from beer_game.sqlite_adapter import SQLiteAdapter
@@ -311,7 +312,8 @@ def player():
                 current_headers[5]: h['cost']
             })
         
-        st.table(table_data)
+        df = pd.DataFrame(table_data)
+        st.dataframe(df, use_container_width=True, hide_index=True)
 
 
 # =========================
