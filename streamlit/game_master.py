@@ -253,56 +253,81 @@ def game_master():
             
             from beer_game.player_repo import PlayerRepo, ROLES
             
-            h_role = st.selectbox(
-                "Role",
-                ("shop", "retailer", "factory"),
-                key=f"h_role_{player}",
-                label_visibility="collapsed"
-            )
-
-            p_repo = PlayerRepo(gameRepo.game, player, h_role, gameRepo.db)
-            history = p_repo.get_stat_history()
+            all_history_data = []
+            min_week = week
             
-            if history:
-                start_week = history[0]['week']
+            for h_role in ["shop", "retailer", "factory"]:
+                p_repo = PlayerRepo(gameRepo.game, player, h_role, gameRepo.db)
+                h_list = p_repo.get_stat_history()
+                if h_list:
+                    min_week = min(min_week, h_list[0]['week'])
+                    all_history_data.append((h_role, h_list))
+            
+            if all_history_data:
+                start_week = min_week
                 current_week = week
                 
                 order_history = gameRepo.db.getOrderByWeek(gameRepo.game, start_week, current_week)
                 
-                table_data = []
                 lang = st.session_state.get("lang", "zh")
                 
-                headers = {
-                    "zh": ["週", "注文", "在庫", "在庫切れ", "発注", "コスト"],
-                    "en": ["Week", "Incoming Order", "Inventory", "Out of Stock", "Placed Order", "Cost"],
-                    "ja": ["週", "注文", "在庫", "在庫切れ", "発注", "コスト"]
+                # 多言語対応のマップ
+                role_names_map = {
+                    "zh": {"shop": "零售", "retailer": "批發", "factory": "工廠"},
+                    "en": {"shop": "Shop", "retailer": "Retailer", "factory": "Factory"},
+                    "ja": {"shop": "小売", "retailer": "卸売", "factory": "工場"}
                 }
-                current_headers = headers.get(lang, headers["zh"])
-
-                for h in reversed(history):
-                    w = h['week']
-                    
-                    incoming_order = order_history.get(w, {}).get(player, {}).get(h_role, {}).get('buy', 0)
-
-                    my_placed_order = 0
-                    if h_role != "factory": # factory does not place order to next role
-                        my_index = ROLES.index(h_role)
-                        next_role = ROLES[my_index + 1]
-                        my_placed_order = order_history.get(w, {}).get(player, {}).get(next_role, {}).get('buy', 0)
-                    
-                    table_data.append({
-                        current_headers[0]: w,
-                        current_headers[1]: incoming_order,
-                        current_headers[2]: h['inventory'],
-                        current_headers[3]: h['out_of_stock'],
-                        current_headers[4]: my_placed_order,
-                        current_headers[5]: h['cost']
-                    })
+                metric_names_map = {
+                    "zh": ["訂單", "庫存", "欠貨", "下單", "成本"],
+                    "en": ["Order", "Inv", "OoS", "Buy", "Cost"],
+                    "ja": ["注文", "在庫", "欠品", "発注", "コスト"]
+                }
                 
-                df = pd.DataFrame(table_data)
-                st.dataframe(df, use_container_width=True, hide_index=True)
+                curr_role_map = role_names_map.get(lang, role_names_map["en"])
+                curr_metrics = metric_names_map.get(lang, metric_names_map["en"])
+                target_roles = ["shop", "retailer", "factory"]
+
+                # MultiIndex の列定義を作成
+                col_tuples = []
+                for r_key in target_roles:
+                    r_name = curr_role_map[r_key]
+                    for m in curr_metrics:
+                        col_tuples.append((r_name, m))
+                
+                cols = pd.MultiIndex.from_tuples(col_tuples)
+                weeks = sorted(range(start_week, current_week + 1), reverse=True)
+                
+                # データを格納する DataFrame の初期化
+                df = pd.DataFrame(index=weeks, columns=cols)
+                df.index.name = "Week" if lang == "en" else "週"
+                
+                for w in weeks:
+                    for h_role, h_list in all_history_data:
+                        if h_role not in curr_role_map: continue
+                        
+                        h = next((x for x in h_list if x['week'] == w), None)
+                        if not h: continue
+                        
+                        r_name = curr_role_map[h_role]
+                        
+                        # データの取得
+                        incoming_order = order_history.get(w, {}).get(player, {}).get(h_role, {}).get('buy', 0)
+                        my_placed_order = 0
+                        if h_role != "factory":
+                            my_index = ROLES.index(h_role)
+                            next_role = ROLES[my_index + 1]
+                            my_placed_order = order_history.get(w, {}).get(player, {}).get(next_role, {}).get('buy', 0)
+
+                        # 各セルに値をセット
+                        df.loc[w, (r_name, curr_metrics[0])] = incoming_order
+                        df.loc[w, (r_name, curr_metrics[1])] = h['inventory']
+                        df.loc[w, (r_name, curr_metrics[2])] = h['out_of_stock']
+                        df.loc[w, (r_name, curr_metrics[3])] = my_placed_order
+                        df.loc[w, (r_name, curr_metrics[4])] = h['cost']
+                
+                st.dataframe(df, use_container_width=True)
             else:
-                st.info("No history data available for this role.")
+                st.info("No history data available for this supply chain.")
 
 
 # =========================
