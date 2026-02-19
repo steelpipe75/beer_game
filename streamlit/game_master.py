@@ -344,7 +344,7 @@ def game_master():
                     # 週ごとの合計コストをセット
                     df.loc[w, (total_cost_label, "")] = weekly_total_cost
                 
-                st.dataframe(df, use_container_width=True)
+                st.dataframe(df, width="stretch")
 
                 # Plotly subplot chart for Game Master
                 if not df.empty:
@@ -405,7 +405,7 @@ def game_master():
                         legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.02)
                     )
 
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
             else:
                 st.info("No history data available for this supply chain.")
 

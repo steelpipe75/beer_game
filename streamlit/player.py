@@ -316,7 +316,7 @@ def player():
             })
         
         df = pd.DataFrame(table_data)
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, width="stretch", hide_index=True)
 
         # Combined Plotly chart with subplots for alignment
         if not df.empty:
@@ -370,7 +370,7 @@ def player():
                 legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.02)
             )
 
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
 
 # =========================
