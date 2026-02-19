@@ -4,6 +4,8 @@ from pymongo.server_api import ServerApi
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from beer_game.mongodb_adapter import MongoDBAdapter
 from beer_game.sqlite_adapter import SQLiteAdapter
@@ -316,37 +318,59 @@ def player():
         df = pd.DataFrame(table_data)
         st.dataframe(df, use_container_width=True, hide_index=True)
 
-        # Plotly line charts
+        # Combined Plotly chart with subplots for alignment
         if not df.empty:
             x_col = current_headers[0]  # "Week" or "週"
             cost_col = current_headers[5] # "Cost" or "コスト"
 
             # Sort by week for charts to ensure chronological order
             df_plot = df.sort_values(by=x_col)
-
-            # 1. Metrics Chart (excluding Cost)
             metrics_cols = [c for c in df_plot.columns if c != cost_col and c != x_col]
-            fig_metrics = px.line(
-                df_plot, 
-                x=x_col, 
-                y=metrics_cols,
-                markers=True,
-                title="Metrics"
-            )
-            fig_metrics.update_layout(xaxis_type='category')
-            st.plotly_chart(fig_metrics, use_container_width=True)
 
-            # 2. Cost Chart
-            fig_cost = px.line(
-                df_plot, 
-                x=x_col, 
-                y=cost_col, 
-                markers=True,
-                title="Cost",
-                color_discrete_sequence=['red']
+            # Create subplots: 2 rows, 1 column, sharing x-axis
+            fig = make_subplots(
+                rows=2, cols=1, 
+                shared_xaxes=True, 
+                vertical_spacing=0.1,
+                subplot_titles=("Metrics", "Cost")
             )
-            fig_cost.update_layout(xaxis_type='category')
-            st.plotly_chart(fig_cost, use_container_width=True)
+
+            # Colors from Plotly Express default palette
+            colors = px.colors.qualitative.Plotly
+            
+            # 1. Metrics traces
+            for i, col in enumerate(metrics_cols):
+                fig.add_trace(
+                    go.Scatter(
+                        x=df_plot[x_col], 
+                        y=df_plot[col], 
+                        name=col, 
+                        mode='lines+markers',
+                        line=dict(color=colors[i % len(colors)])
+                    ),
+                    row=1, col=1
+                )
+
+            # 2. Cost trace
+            fig.add_trace(
+                go.Scatter(
+                    x=df_plot[x_col], 
+                    y=df_plot[cost_col], 
+                    name=cost_col, 
+                    mode='lines+markers',
+                    line=dict(color='red')
+                ),
+                row=2, col=1
+            )
+
+            fig.update_xaxes(type='category')
+            fig.update_layout(
+                height=600,
+                margin=dict(l=20, r=20, t=40, b=20),
+                legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.02)
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
 
 
 # =========================
