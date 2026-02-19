@@ -3,7 +3,7 @@ import pymongo
 from pymongo.server_api import ServerApi
 import streamlit as st
 import pandas as pd
-import altair as alt
+import plotly.express as px
 
 from beer_game.mongodb_adapter import MongoDBAdapter
 from beer_game.sqlite_adapter import SQLiteAdapter
@@ -316,19 +316,34 @@ def player():
         df = pd.DataFrame(table_data)
         st.dataframe(df, use_container_width=True, hide_index=True)
 
-        # Altair line chart
+        # Plotly line charts
         if not df.empty:
             x_col = current_headers[0]  # "Week" or "週"
-            df_melted = df.melt(x_col, var_name="Metric", value_name="Value")
-            
-            chart = alt.Chart(df_melted).mark_line(point=True).encode(
-                x=alt.X(f"{x_col}:O", title=x_col),
-                y=alt.Y("Value:Q", title="Value"),
-                color=alt.Color("Metric:N", title="Metrics"),
-                tooltip=[x_col, "Metric", "Value"]
-            ).interactive()
-            
-            st.altair_chart(chart, use_container_width=True)
+            cost_col = current_headers[5] # "Cost" or "コスト"
+
+            # 1. Metrics Chart (excluding Cost)
+            metrics_cols = [c for c in df.columns if c != cost_col and c != x_col]
+            fig_metrics = px.line(
+                df, 
+                x=x_col, 
+                y=metrics_cols,
+                markers=True,
+                title="Metrics"
+            )
+            fig_metrics.update_layout(xaxis_type='category')
+            st.plotly_chart(fig_metrics, use_container_width=True)
+
+            # 2. Cost Chart
+            fig_cost = px.line(
+                df, 
+                x=x_col, 
+                y=cost_col, 
+                markers=True,
+                title="Cost",
+                color_discrete_sequence=['red']
+            )
+            fig_cost.update_layout(xaxis_type='category')
+            st.plotly_chart(fig_cost, use_container_width=True)
 
 
 # =========================
