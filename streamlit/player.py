@@ -321,10 +321,13 @@ def player():
             x_col = current_headers[0]  # "Week" or "週"
             cost_col = current_headers[5] # "Cost" or "コスト"
 
+            # Sort by week for charts to ensure chronological order
+            df_plot = df.sort_values(by=x_col)
+
             # 1. Metrics Chart (excluding Cost)
-            metrics_cols = [c for c in df.columns if c != cost_col and c != x_col]
+            metrics_cols = [c for c in df_plot.columns if c != cost_col and c != x_col]
             fig_metrics = px.line(
-                df, 
+                df_plot, 
                 x=x_col, 
                 y=metrics_cols,
                 markers=True,
@@ -335,7 +338,7 @@ def player():
 
             # 2. Cost Chart
             fig_cost = px.line(
-                df, 
+                df_plot, 
                 x=x_col, 
                 y=cost_col, 
                 markers=True,
