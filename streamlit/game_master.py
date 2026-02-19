@@ -3,7 +3,9 @@ from string import Template
 import pymongo
 from pymongo.server_api import ServerApi
 import pandas as pd
-import altair as alt
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from beer_game.game_repo import GameRepo
 from beer_game.mongodb_adapter import MongoDBAdapter
@@ -344,29 +346,66 @@ def game_master():
                 
                 st.dataframe(df, use_container_width=True)
 
-                # Altair line chart for Game Master
+                # Plotly subplot chart for Game Master
                 if not df.empty:
-                    # Flatten MultiIndex columns for plotting
-                    plot_df = df.copy()
-                    plot_df.columns = [
-                        f"{col[0]} - {col[1]}" if col[1] else col[0]
-                        for col in plot_df.columns
-                    ]
+                    # Sort by week (index) for chronological order
+                    df_plot = df.sort_index()
+                    x_axis_name = df_plot.index.name or "Week"
                     
-                    x_axis_name = df.index.name or "Week"
-                    plot_df = plot_df.reset_index()
+                    # Create subplots
+                    fig = make_subplots(
+                        rows=2, cols=1, 
+                        shared_xaxes=True, 
+                        vertical_spacing=0.1,
+                        subplot_titles=("Metrics", "Cost")
+                    )
+
+                    # Distinguish between Metric and Cost columns
+                    cost_metric_name = curr_metrics[4] # "Cost" / "コスト" / "成本"
                     
-                    # Melt the dataframe for Altair
-                    df_melted = plot_df.melt(x_axis_name, var_name="Metric", value_name="Value")
-                    
-                    chart = alt.Chart(df_melted).mark_line(point=True).encode(
-                        x=alt.X(f"{x_axis_name}:O", title=x_axis_name),
-                        y=alt.Y("Value:Q", title="Value"),
-                        color=alt.Color("Metric:N", title="Metrics"),
-                        tooltip=[x_axis_name, "Metric", "Value"]
-                    ).interactive()
-                    
-                    st.altair_chart(chart, use_container_width=True)
+                    # Standard colors
+                    colors = px.colors.qualitative.Plotly
+                    color_idx = 0
+
+                    for col in df_plot.columns:
+                        role_name, metric_name = col
+                        is_total_cost = (role_name == total_cost_label)
+                        is_role_cost = (metric_name == cost_metric_name)
+                        
+                        trace_name = f"{role_name} {metric_name}".strip()
+                        
+                        if is_total_cost or is_role_cost:
+                            # Add to Cost subplot (Row 2)
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=df_plot.index,
+                                    y=df_plot[col],
+                                    name=trace_name,
+                                    mode='lines+markers',
+                                    line=dict(width=3 if is_total_cost else 1, color='red' if is_total_cost else None)
+                                ),
+                                row=2, col=1
+                            )
+                        else:
+                            # Add to Metrics subplot (Row 1)
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=df_plot.index,
+                                    y=df_plot[col],
+                                    name=trace_name,
+                                    mode='lines+markers'
+                                ),
+                                row=1, col=1
+                            )
+
+                    fig.update_xaxes(type='category', title_text=x_axis_name, row=2, col=1)
+                    fig.update_layout(
+                        height=700,
+                        margin=dict(l=20, r=20, t=40, b=20),
+                        legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.02)
+                    )
+
+                    st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("No history data available for this supply chain.")
 
