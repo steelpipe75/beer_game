@@ -3,6 +3,7 @@ import pymongo
 from pymongo.server_api import ServerApi
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 from beer_game.mongodb_adapter import MongoDBAdapter
 from beer_game.sqlite_adapter import SQLiteAdapter
@@ -314,6 +315,20 @@ def player():
         
         df = pd.DataFrame(table_data)
         st.dataframe(df, use_container_width=True, hide_index=True)
+
+        # Altair line chart
+        if not df.empty:
+            x_col = current_headers[0]  # "Week" or "週"
+            df_melted = df.melt(x_col, var_name="Metric", value_name="Value")
+            
+            chart = alt.Chart(df_melted).mark_line(point=True).encode(
+                x=alt.X(f"{x_col}:O", title=x_col),
+                y=alt.Y("Value:Q", title="Value"),
+                color=alt.Color("Metric:N", title="Metrics"),
+                tooltip=[x_col, "Metric", "Value"]
+            ).interactive()
+            
+            st.altair_chart(chart, use_container_width=True)
 
 
 # =========================

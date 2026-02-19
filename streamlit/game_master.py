@@ -3,6 +3,7 @@ from string import Template
 import pymongo
 from pymongo.server_api import ServerApi
 import pandas as pd
+import altair as alt
 
 from beer_game.game_repo import GameRepo
 from beer_game.mongodb_adapter import MongoDBAdapter
@@ -342,6 +343,30 @@ def game_master():
                     df.loc[w, (total_cost_label, "")] = weekly_total_cost
                 
                 st.dataframe(df, use_container_width=True)
+
+                # Altair line chart for Game Master
+                if not df.empty:
+                    # Flatten MultiIndex columns for plotting
+                    plot_df = df.copy()
+                    plot_df.columns = [
+                        f"{col[0]} - {col[1]}" if col[1] else col[0]
+                        for col in plot_df.columns
+                    ]
+                    
+                    x_axis_name = df.index.name or "Week"
+                    plot_df = plot_df.reset_index()
+                    
+                    # Melt the dataframe for Altair
+                    df_melted = plot_df.melt(x_axis_name, var_name="Metric", value_name="Value")
+                    
+                    chart = alt.Chart(df_melted).mark_line(point=True).encode(
+                        x=alt.X(f"{x_axis_name}:O", title=x_axis_name),
+                        y=alt.Y("Value:Q", title="Value"),
+                        color=alt.Color("Metric:N", title="Metrics"),
+                        tooltip=[x_axis_name, "Metric", "Value"]
+                    ).interactive()
+                    
+                    st.altair_chart(chart, use_container_width=True)
             else:
                 st.info("No history data available for this supply chain.")
 
